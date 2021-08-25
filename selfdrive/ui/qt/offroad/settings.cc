@@ -96,7 +96,9 @@ TogglesPanel::TogglesPanel(QWidget *parent) : QWidget(parent) {
 DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
   QVBoxLayout *main_layout = new QVBoxLayout(this);
   Params params = Params();
-  main_layout->addWidget(new LabelControl("Dongle ID", getDongleId().value_or("N/A")));
+
+  QString dongle = QString::fromStdString(params.get("DongleId", false));
+  main_layout->addWidget(new LabelControl("Dongle ID", dongle));
   main_layout->addWidget(horizontal_line());
 
   QString serial = QString::fromStdString(params.get("HardwareSerial", false));
@@ -296,25 +298,6 @@ QWidget * network_panel(QWidget * parent) {
   return w;
 }
 
-QWidget * community_panel(QWidget * parent) {
-
-  QWidget *w = new QWidget(parent);
-  QVBoxLayout *comm_layout = new QVBoxLayout(w);
-
-  comm_layout->addWidget(new PrebuiltParamControl("PrebuiltEnabled",
-                                            "Enable Prebuilt File",
-                                            "완전 정상주행 2회 이후 활성화하세요. prebuilt 파일이 있는경우 새로 빌드하지 않습니다. 업데이트창이 뜰때 내용을 확인하세요.",
-                                            "../assets/offroad/icon_checkmark.png"
-                                            ));
-
-  comm_layout->addWidget(horizontal_line());
-  comm_layout->addWidget(new LQRSelection());
-  comm_layout->addWidget(horizontal_line());
-  comm_layout->addWidget(new INDISelection());
-
-  return w;
-}
-
 void SettingsWindow::showEvent(QShowEvent *event) {
   panel_widget->setCurrentIndex(0);
   nav_btns->buttons()[0]->setChecked(true);
@@ -363,7 +346,6 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     {"Network", network_panel(this)},
     {"Toggles", new TogglesPanel(this)},
     {"Software", new SoftwarePanel(this)},
-    {"Community", community_panel(this)},
   };
 
 #ifdef ENABLE_MAPS

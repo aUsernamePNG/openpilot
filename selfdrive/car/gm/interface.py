@@ -80,7 +80,7 @@ class CarInterface(CarInterfaceBase):
     elif candidate == CAR.BOLT:
       # initial engage unkown - copied from Volt. Stop and go unknown.
       ret.minEnableSpeed = -1
-      ret.minSteerSpeed = 5
+      ret.minSteerSpeed = -1
       ret.mass = 1625. + STD_CARGO_KG
       ret.safetyModel = car.CarParams.SafetyModel.gm
       ret.wheelbase = 2.60096

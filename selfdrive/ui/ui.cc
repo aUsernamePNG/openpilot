@@ -14,10 +14,6 @@
 #include "selfdrive/ui/paint.h"
 #include "selfdrive/ui/qt/qt_window.h"
 
-#if UI_FEATURE_DASHCAM
-#include "selfdrive/ui/dashcam.h"
-#endif
-
 #define BACKLIGHT_DT 0.05
 #define BACKLIGHT_TS 10.00
 #define BACKLIGHT_OFFROAD 75
@@ -138,19 +134,12 @@ static void update_state(UIState *s) {
     scene.engageable = sm["controlsState"].getControlsState().getEngageable();
     scene.dm_active = sm["driverMonitoringState"].getDriverMonitoringState().getIsActiveMode();
   }
-  if (sm.updated("carState")) {
-	  s->scene.brakeLights = sm["carState"].getCarState().getBrakeLights();
-  }
   if (sm.updated("radarState") && s->vg) {
     std::optional<cereal::ModelDataV2::XYZTData::Reader> line;
     if (sm.rcv_frame("modelV2") > 0) {
       line = sm["modelV2"].getModelV2().getPosition();
     }
     update_leads(s, sm["radarState"].getRadarState(), line);
-    auto radar_state = sm["radarState"].getRadarState();
-    s->scene.lead_v_rel = radar_state.getLeadOne().getVRel();
-    s->scene.lead_d_rel = radar_state.getLeadOne().getDRel();
-    s->scene.lead_status = radar_state.getLeadOne().getStatus();
   }
   if (sm.updated("liveCalibration")) {
     scene.world_objects_visible = true;
@@ -238,15 +227,6 @@ static void update_vision(UIState *s) {
   } else if (s->scene.started) {
     util::sleep_for(1000. / UI_FREQ);
   }
-
-#if UI_FEATURE_DASHCAM
-   if(s->awake)
-   {
-        int touch_x = -1, touch_y = -1;
-        touch_poll(&(s->touch), &touch_x, &touch_y, 0);
-        dashcam(s, touch_x, touch_y);
-   }
-#endif
 }
 
 static void update_status(UIState *s) {
@@ -312,8 +292,6 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   timer = new QTimer(this);
   QObject::connect(timer, &QTimer::timeout, this, &QUIState::update);
   timer->start(0);
-
-  touch_init(&(ui_state.touch));
 }
 
 void QUIState::update() {

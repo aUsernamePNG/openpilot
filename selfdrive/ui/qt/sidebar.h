@@ -59,5 +59,4 @@ private:
   QColor temp_status = warning_color;
   QString net_type;
   int net_strength = 0;
-  QString network_str = "--";
 };

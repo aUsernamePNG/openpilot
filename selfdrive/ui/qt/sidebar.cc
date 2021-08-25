@@ -2,6 +2,7 @@
 
 #include <QMouseEvent>
 
+#include "selfdrive/ui/qt/qt_window.h"
 #include "selfdrive/common/util.h"
 #include "selfdrive/hardware/hw.h"
 #include "selfdrive/ui/qt/util.h"
@@ -40,9 +41,9 @@ Sidebar::Sidebar(QWidget *parent) : QFrame(parent) {
 
   connect(this, &Sidebar::valueChanged, [=] { update(); });
 
-  setAttribute(Qt::WA_OpaquePaintEvent);
-  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
   setFixedWidth(300);
+  setMinimumHeight(vwp_h);
+  setStyleSheet("background-color: rgb(57, 57, 57);");
 }
 
 void Sidebar::mouseReleaseEvent(QMouseEvent *event) {
@@ -55,15 +56,7 @@ void Sidebar::updateState(const UIState &s) {
   auto &sm = *(s.sm);
 
   auto deviceState = sm["deviceState"].getDeviceState();
-
-  auto networktype = deviceState.getNetworkType();
   setProperty("netType", network_type[deviceState.getNetworkType()]);
-  if(networktype == cereal::DeviceState::NetworkType::WIFI) {
-    std::string ip = deviceState.getWifiIpAddress();
-    network_str = ip.c_str();
-  } else {
-    network_str = net_type;
-  }
   int strength = (int)deviceState.getNetworkStrength();
   setProperty("netStrength", strength > 0 ? strength + 1 : 0);
 
@@ -110,8 +103,6 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
   p.setRenderHint(QPainter::Antialiasing);
 
-  p.fillRect(rect(), QColor(57, 57, 57));
-
   // static imgs
   p.setOpacity(0.65);
   p.drawImage(settings_btn.x(), settings_btn.y(), settings_img);
@@ -129,8 +120,8 @@ void Sidebar::paintEvent(QPaintEvent *event) {
 
   configFont(p, "Open Sans", 35, "Regular");
   p.setPen(QColor(0xff, 0xff, 0xff));
-  const QRect r = QRect(25, 247, 250, 50);
-  p.drawText(r, Qt::AlignCenter, network_str);
+  const QRect r = QRect(50, 247, 100, 50);
+  p.drawText(r, Qt::AlignCenter, net_type);
 
   // metrics
   drawMetric(p, "TEMP", QString("%1°C").arg(temp_val), temp_status, 338);
